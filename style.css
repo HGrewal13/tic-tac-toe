@@ -29,11 +29,13 @@ h1 {
 }
 
 main {
-    height: 100vh;
+    width: 60%;
+    height: 60vh;
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     grid-template-rows: 1fr 1fr 1fr;
     position: relative;
+    margin: 0 auto;
 }
 
 .quadrent {
@@ -41,6 +43,22 @@ main {
     justify-content: center;
     align-items: center;
     font-size: 2rem;
+}
+
+.quadrent:nth-child(3n + 1) {
+    /* background-color: blue; */
+    border-left: none;
+}
+
+.quadrent:nth-child(3n-1) {
+    /* background-color: blue; */
+    border-left: none;
+    border-right: none;
+}
+
+.quadrent:nth-child(3n) {
+    /* background-color: blue; */
+    border-right: none;
 }
 
 .overlay {

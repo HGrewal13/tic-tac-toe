@@ -12,11 +12,11 @@
         <div class="gameInfo">
             <div class="scores">
                 <div class="player1">
-                    <h2>Player 1 Score:</h2>
+                    <h2 class="player1Name">Player 1 Score:</h2>
                     <p class="player1Score"></p>
                 </div>
                 <div class="player2">
-                    <h2>Player 2 Score:</h2>
+                    <h2 class="player2Name">Player 2 Score:</h2>
                     <p class="player2Score"></p>
                 </div>
             </div>
@@ -35,6 +35,9 @@
             <div class="quadrent" data-value="7"></div>
             <div class="quadrent" data-value="8"></div>
         </main>
+        <div class="additionalOptions">
+            <button type="button" id="newGame">Start New Game</button>
+        </div>
     </div>
     <dialog>
         <form action="#">
@@ -42,6 +45,7 @@
             <input type="text" id="player1" name="player1" value="player1">
             <label for="player2">Player2</label>
             <input type="text" id="player2" name="player2" value="player2">
+            <button class="submitButton" type="submit">Submit</button>
         </form>
     </dialog>
     <script src="scripts.js"></script>

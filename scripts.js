@@ -1,105 +1,100 @@
 
 const GameBoard = function() {
-    let gameBoard = new Array(9).fill(undefined);
+    const board = new Array(9).fill(null);
 
-    // Returns a copy of the gameBoard so it can't be directly changed
-    // console.log for now, but the object will need to be returned to make sure we can update on DOM
-    const getBoard = () => console.log([...gameBoard]);
+    const printBoard = function() {
+        console.log(board);
+    }
 
-    function checkPosition(position) {
-        // 0 to indicate it's free, 1 to indicate taken
-        if(gameBoard[position] === undefined) {
-            return 0;
+    const checkPosition = function(position) {
+        if(board[position] === null) {
+            console.log("valid");
+            return true;
         } else {
-            return 1;
+            console.log("invalid");
+            return false;
         }
     }
 
-    // const insertMark = function(player, mark, position) {
-    //     gameBoard[position] = mark;
-    // }
-
-    // test of actual function
     const insertMark = function(mark, position) {
-        // checkPosition is run before inserting in the game function
-        gameBoard[position] = mark;
-        console.log(getBoard());
+        board[position] = mark;
     }
 
     const checkFullBoard = function() {
-        return gameBoard.every((space) => space !== undefined);
+        return board.every((cell) => cell !== null);
     }
 
-    return {checkPosition, insertMark, getBoard, checkFullBoard};
+    const resetBoard = function() {
+        board.fill(null);
+    }
+    
+    return {printBoard, checkPosition, insertMark, checkFullBoard, resetBoard};
 }
 
-// Define createPlayer factory function
-const createPlayer = function(name, mark) {
+const CreatePlayer = function(name, mark) {
     let score = 0;
 
     const getName = () => name;
     const getMark = () => mark;
-    const win = function() {score++};
     const getScore = () => score;
-
-    return {getName, getMark, win, getScore};
+    const win = function() {score++};
+    return {getName, getMark, getScore, win};
 }
 
-
-const game = function(board, p1, p2) {
+const Game = function(ui, board, player1, player2) {
     let gameOver = false;
-    let currentPlayer = p1;
-
-    // tracks the positions the player has inserted a mark in. This will allow to check for win conditions
+    let currentPlayer = player1;
+    // Stores every position each player makes to check for win conditions
     let playerPositions = {
-        p1: [],
-        p2: []
+        [player1.getName()] : [],
+        [player2.getName()] : []
     }
 
-    let turnTransition = function() {
-        currentPlayer = currentPlayer === p1 ? p2 : p1;
-    }
+    // This is the callback function that will be passed to .onSquareClick
+    // This is done so game doesnt interact with the DOM directly
+    // The arguements will be passed to us by .onSquareClick
+    const handleClick = function(square, position) {
+        if(gameOver) {return};
+        let currentName = currentPlayer.getName();
+        let currentMark = currentPlayer.getMark();
 
-    let getTurnTransitionMessage = function() {
-        return `It's now ${currentPlayer.getName()}'s turn`;
-    }
-
-    const getCurrentPlayer = () => currentPlayer;
-
-    const getTurn = () => console.log(`${currentPlayer.getName()}'s turn`);
-
-    const performTurn = function(position) {
-        if(gameOver) {
-            return;
-        }
-        // Checks if the position is valid. If it is, insert mark and transition turn, else print board but dont transition turn
-        if(board.checkPosition(position) === 0) {
-            console.log("accepted");
-            board.insertMark(currentPlayer.getMark(), position);
-            storePlayerPositions(position);
-            if(checkWinner()) {
+        if(board.checkPosition(position)) {
+            board.insertMark(currentMark, position);
+            playerPositions[currentName].push(position);
+            ui.updateBoard(square, currentMark);
+            // currentPlayer is defined in Game's scope, so it has to be passed at the time of using checkWinner to ensure 
+            // that the correct player is being referenced.
+            // if currentPlayer was in handleClick's scope, it wouldnt be an issue
+            // Potential issues otherwise: if transitionTurn() is executed before checkWinner(), the wrong player's values would be checked
+            if(checkWinner(currentPlayer)) {
+                currentPlayer.win();
+                // without setTimeout the alert would appear before the mark is places
+                setTimeout(function() {
+                    ui.alertWinner(currentName);
+                }, 100);
                 return;
-            } else {
-                return turnTransition();
             }
+            // board.checkFullBoard();
+            if(checkTieGame()) {
+                setTimeout(function() {
+                    ui.alertTie();
+                }, 100)
+                return;
+            }
+            transitionTurn();
+            board.printBoard();
+            
         } else {
-            console.log("position taken");
-            board.getBoard();
-            return;
+            alert("Invalid move");
         }
     }
 
-    // Function that stores an array of where the marks of each player are
-    // This will be passed to checkWinner() in the game() function to determine if someone has won
-    function storePlayerPositions(position) {
-        const playerName = currentPlayer.getName();
-        playerPositions[playerName].push(position);
+    const transitionTurn = function() {
+        currentPlayer = currentPlayer === player1 ? player2 : player1;
     }
 
-    function checkWinner() {
-        let winnerPresent = false;
-
-        const allWinCons = [
+    const checkWinner = function(player) {
+        const winConditions = [
             // horizontal
             [0,1,2], [3,4,5],[6,7,8],
             // vertical
@@ -108,107 +103,155 @@ const game = function(board, p1, p2) {
             [0,4,8],[2,4,6]
         ]
 
-        // For each winCon, check if either player has all the positions needed to win
-        // forEach doesnt respect return statements, so it's better to use a for of loop
-        for(winCon of allWinCons) {
-            for(player in playerPositions) {
-                // If they do, set gameOver to true
-                if(winCon.every(position => playerPositions[player].includes(position))) {
-                    alert(`${player} is the winner`);
-                    if(player === "p1") {
-                        p1.win();
-                    } else if(player === "p2") {
-                        p2.win();
-                    }
-                    gameOver = true;
-                    return true;
-                }
-                // check for draw condition
-            }
-        }
-
-        if(!gameOver) {
-            let tieCondition = board.checkFullBoard();
-            if(tieCondition) {
+        // get the current players playerPosition values
+        console.log(playerPositions[player.getName()]);
+        const positionArray = playerPositions[player.getName()];
+        // iterate through each array to see if the player's playerPositions contains all of the values 
+        for(condition of winConditions) {
+            // .every returns a boolean value
+            if(condition.every(pos => positionArray.includes(pos))) {
+                console.log("match");
                 gameOver = true;
-                alert("Tie Game");
+                return true;
             }
         }
-        return false;
     }
 
-    function isGameOver() {
-        if(gameOver) {
+    // Check Tie Game function
+    const checkTieGame = function() {
+        if(board.checkFullBoard() && gameOver === false) {
+            console.log("Tie Game");
+            gameOver = true;
             return true;
         } else {
             return false;
         }
     }
 
+    ui.onSquareClick(handleClick);
 
+    const resetPlayerPositions = function() {
+        for(let player in playerPositions) {
+            playerPositions[player] = [];
+            console.log(playerPositions[player]);
+        }
+    }
 
-    return {getTurn, getCurrentPlayer, getTurnTransitionMessage, performTurn, checkWinner, isGameOver};
+    const resetGame = function() {
+        gameOver = false;
+        resetPlayerPositions();
+    }
+
+    return {resetGame};
 
 }
 
-// DOM Manipulation for Game
+const UI = function(board, player1, player2) {
+    // Initial Player Name set up on DOM
+    const player1Field = document.querySelector(".player1Name");
+    const player2Field = document.querySelector(".player2Name");
 
-const UI = function() {
-    const main = document.querySelector("main");
-    const currentTurn = document.querySelector(".currentTurn");
-    const p1Score = document.querySelector(".player1Score");
-    const p2Score = document.querySelector(".player2Score");
+    player1Field.textContent = `${player1.getName()} : X`;
+    player2Field.textContent = `${player2.getName()} : O`;
 
-    p1Score.textContent = p1.getScore();
-    p2Score.textContent = p2.getScore();
-    
-    currentTurn.textContent = currentGame.getTurnTransitionMessage();
-    // Based on which quadrent the user clicks, save that quadrent's value
-    main.addEventListener("click", (event) => {
-        // Pass that value as the position. parseInt must be used so it can be passed as an index
-        const position = parseInt(event.target.dataset.value);
-        // Set target div to be an "X" or "O" based on whose turn it is
-        event.target.textContent = currentGame.getCurrentPlayer().getMark();
-        // use delay so DOM is updated with mark before running game logic. Alert in checkWinner won't allow the DOM to update otherwise
-        // Update this without timeout once I no longer use alert
-        setTimeout(() => {
-
-            currentGame.performTurn(position);
-
-            // overlay to restrict interaction after game is over
-            if (currentGame.isGameOver()) {
-                const overlay = document.createElement("div");
-                const newGameButton = document.createElement("button");
-
-                overlay.classList.add("overlay");
-                overlay.textContent = "Game Over";
-
-                newGameButton.textContent = "New Game";
-
-                main.appendChild(overlay);
-                overlay.appendChild(newGameButton);
-                main.style.pointerEvents = "none";
+    // Main DOM interactions for placing marks on board
+    const onSquareClick = function(callback) {
+        const main = document.querySelector("main");
+        main.addEventListener("click", function(event) {
+            const square = event.target;
+            // Convert to integer so comparisons can be made when checking for win conditions
+            let position = parseInt(event.target.dataset.value);
+            // makes sure the position is a valid square value
+            if(position !== undefined) {
+                callback(square, position);
             }
+        })
+    }
+    
+    const updateBoard = function(square, mark) {
+        square.textContent = mark;
+    }
 
-            currentTurn.textContent = currentGame.getTurnTransitionMessage();
-            
-            // Update scores
-            p1Score.textContent = p1.getScore();
-            p2Score.textContent = p2.getScore();
+    const alertWinner = function(winner) {
+        alert(`${winner} is the winner!`);
+    }
 
-        }, 0);
-    })
+    const alertTie = function() {
+        alert("Tie Game!");
+    }
 
+    const resetUI = function() {
+        const main = document.querySelector("main");
+        const squares = main.querySelectorAll(".quadrent");
 
+        squares.forEach(square => square.textContent = "");
+    }
+
+    return {updateBoard, onSquareClick, alertWinner, alertTie, resetUI};
 }
 
-// const dialog = document.querySelector("dialog");
-// dialog.showModal();
+// Takes in 2 names and then creates all the components of a game and creates an instance of the game
+// Once the game is created, it relies on game's logic to run
+const init = function(name1, name2) {
+    const player1 = CreatePlayer(`${name1}`, "X");
+    const player2 = CreatePlayer(`${name2}`,"O");
 
-// Init Function
+    // every single instance of a factory function should be called here by passing in the required parameters. Including UI
+    const board = GameBoard();
+    const ui = UI(board, player1, player2);
+    const game = Game(ui, board, player1, player2);
+}
 
-const p1 = createPlayer("p1", "X");
-const p2 = createPlayer("p2", "O");
-const board = GameBoard();
-const currentGame = game(board, p1, p2);
-const interface = UI();
+const App = function() {
+    let player1, player2;
+    const setPlayers = function(name1, name2) {
+        player1 = CreatePlayer(`${name1}`, "X");
+        player2 = CreatePlayer(`${name2}`,"O");
+    }
+
+    const startGame = function() {
+        const board = GameBoard();
+        const ui = UI(board, player1, player2);
+        const game = Game(ui, board, player1, player2);
+        ui.resetUI();
+    }
+    return {setPlayers, startGame};
+}
+
+
+
+// Global Variables and Initiating the Game
+const dialog = document.querySelector("dialog");
+const form = document.querySelector("form");
+const submit = document.querySelector(".submitButton");
+const newGame = document.querySelector("#newGame");
+const app = App();
+
+
+dialog.showModal();
+submit.addEventListener("click", function(event) {
+    event.preventDefault();
+    const player1Name = form.elements["player1"].value;
+    const player2Name = form.elements["player2"].value;
+
+    // init(player1Name, player2Name);
+    app.setPlayers(player1Name, player2Name);
+    app.startGame();
+    dialog.close();
+})
+
+newGame.addEventListener("click", function() {
+    const player1Name = form.elements["player1"].value;
+    const player2Name = form.elements["player2"].value;
+
+
+    // init(player1Name, player2Name);
+    app.startGame();
+    // need resets on all the game components
+})
+
+
+// TO DO:
+// game reset logic
+    // playerPositions isn't reset when new instance is created
+// score tracking
