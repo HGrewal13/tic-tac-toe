@@ -9,21 +9,12 @@
 <body>
     <div class="container">
         <h1>Tic-Tac-Toe</h1>
-        <div class="gameInfo">
-            <div class="scores">
-                <div class="player1">
-                    <h2 class="player1Name">Player 1 Score:</h2>
-                    <p class="player1Score"></p>
-                </div>
-                <div class="player2">
-                    <h2 class="player2Name">Player 2 Score:</h2>
-                    <p class="player2Score"></p>
-                </div>
-            </div>
-            <div class="currentTurn">
+        <h2 class="round"></h2>
 
-            </div>
-        </div>
+        <!-- <div class="currentTurn">
+        </div> -->
+
+
         <main>
             <div class="quadrent" data-value="0"></div>
             <div class="quadrent" data-value="1"></div>
@@ -39,21 +30,36 @@
             <button type="button" id="newGame">Start New Game</button>
         </div>
     </div>
+
+    <div class="playerContainers">
+        <div class="player1">
+            <h2 class="player1Name"></h2>
+            <p class="player1Score"></p>
+        </div>
+        <div class="player2">
+            <h2 class="player2Name"></h2>
+            <p class="player2Score"></p>
+        </div>
+    </div>
+
+
     <dialog>
         <form action="#">
             <div class="inputContainer">
-                <label for="player1">Player1</label>
-                <input type="text" id="player1" name="player1" value="player1">
+                <label for="player1">Player1:</label>
+                <input type="text" id="player1" name="player1" value="player1" placeholder="name" required>
             </div>
             
             <div class="inputContainer">
-                <label for="player2">Player2</label>
-                <input type="text" id="player2" name="player2" value="player2">
+                <label for="player2">Player2:</label>
+                <input type="text" id="player2" name="player2" value="player2" placeholder="name" required>
             </div>
             
             <button class="submitButton" type="submit">Submit</button>
         </form>
     </dialog>
+    <!-- <script src="scripts.js"></script> -->
+     <!-- <script src="scriptsRefactored.js"></script> -->
     <script src="scripts.js"></script>
 </body>
 </html>
