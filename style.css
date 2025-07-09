@@ -7,7 +7,7 @@
 :root {
     font-size: 16px;
 
-    --flippedQuadrentColor: red;
+    --flippedQuadrentColor: #FFCCCB;
 }
 
 .container {
@@ -48,3 +48,16 @@
     padding: 10px 15px;
 }
 
+.scores {
+    display: flex;
+    margin-top: 20px;
+    border: 1px solid red;
+}
+
+.player1Score {
+    border-right: 1px solid red;
+}
+
+.player1Score, .player2Score {
+    padding: 10px 20px;
+}
