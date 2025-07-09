@@ -4,9 +4,16 @@
     box-sizing: border-box;
 }
 
+:root {
+    font-size: 16px;
+
+    --flippedQuadrentColor: red;
+}
+
 .container {
-    height: 70vh;
+    height: 100vh;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
 }
@@ -24,3 +31,20 @@
     justify-content: center;
     align-items: center;
 }
+
+.flipped {
+    transform: rotateY(180deg);
+    transition: 0.75s;
+    background-color: var(--flippedQuadrentColor);
+}
+
+.message {
+    font-size: 1.5rem;
+    margin: 10px;
+    text-align: center;
+}
+
+.reset {
+    padding: 10px 15px;
+}
+
