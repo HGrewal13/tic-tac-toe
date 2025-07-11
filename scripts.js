@@ -178,7 +178,6 @@ const UI = (function() {
     })
 
     // HELPER FUNCTIONS
-    // Check what's considered helper functions
     const showMessage = function(message) {
         const messageDiv = document.querySelector(".message");
         messageDiv.innerHTML = message;
@@ -196,9 +195,7 @@ const UI = (function() {
 
     const highlightWinningQuadrents = function(a, b, c) {
         const quadrents = document.querySelectorAll(".quadrent");
-        // quadrents[a].style.backgroundColor = "red";
-        // quadrents[b].style.backgroundColor = "red";
-        // quadrents[c].style.backgroundColor = "red";
+
         quadrents[a].classList.add("flipped");
         quadrents[b].classList.add("flipped");
         quadrents[c].classList.add("flipped");
@@ -211,5 +208,3 @@ const UI = (function() {
 }())
 
 
-// TO DO:
-// disable clicks after gameover?
